@@ -5,7 +5,6 @@ Authentication routes for user registration, login, and profile.
 from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -21,8 +20,6 @@ from app.auth import (
 
 # Create router
 router = APIRouter(prefix="/auth", tags=["Authentication"])
-# Password hashing context - using argon2 (more secure than bcrypt)
-pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register(user_data: UserCreate, db: Session = Depends(get_db)):
