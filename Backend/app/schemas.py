@@ -64,3 +64,41 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     """Schema for data stored inside JWT token."""
     email: Optional[str] = None
+
+
+# ============= CLIENT SCHEMAS =============
+
+class ClientBase(BaseModel):
+    name: str = Field(..., min_length=1, max_length=200)
+    email: Optional[EmailStr] = None
+    phone: Optional[str] = Field(None, max_length=50)
+    company: Optional[str] = Field(None, max_length=200)
+    address: Optional[str] = Field(None, max_length=500)
+    city: Optional[str] = Field(None, max_length=100)
+    state: Optional[str] = Field(None, max_length=100)
+    zip_code: Optional[str] = Field(None, max_length=20)
+    country: Optional[str] = Field(None, max_length=100)
+    notes: Optional[str] = Field(None, max_length=1000)
+
+class ClientCreate(ClientBase):
+    pass
+
+class ClientUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=1, max_length=200)
+    email: Optional[EmailStr] = None
+    phone: Optional[str] = Field(None, max_length=50)
+    company: Optional[str] = Field(None, max_length=200)
+    address: Optional[str] = Field(None, max_length=500)
+    city: Optional[str] = Field(None, max_length=100)
+    state: Optional[str] = Field(None, max_length=100)
+    zip_code: Optional[str] = Field(None, max_length=20)
+    country: Optional[str] = Field(None, max_length=100)
+    notes: Optional[str] = Field(None, max_length=1000)
+
+class ClientResponse(ClientBase):
+    id: int
+    created_at: datetime
+    updated_at: Optional[datetime]
+    
+    class Config:
+        from_attributes = True

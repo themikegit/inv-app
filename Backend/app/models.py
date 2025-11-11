@@ -51,6 +51,33 @@ class User(Base):
     
     # Relationship to Invoice
     invoices = relationship("Invoice", back_populates="user")
+    # Relationship to Client
+    clients = relationship("Client", back_populates="user")
     
     def __repr__(self):
-        return f"<User(id={self.id}, email='{self.email}')>"     
+        return f"<User(id={self.id}, email='{self.email}')>"
+
+
+class Client(Base):
+    __tablename__ = "clients"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False, index=True)
+    email = Column(String, nullable=True)
+    phone = Column(String, nullable=True)
+    company = Column(String, nullable=True)
+    address = Column(String, nullable=True)
+    city = Column(String, nullable=True)
+    state = Column(String, nullable=True)
+    zip_code = Column(String, nullable=True)
+    country = Column(String, nullable=True)
+    notes = Column(String, nullable=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    # Relationship to User
+    user = relationship("User", back_populates="clients")
+    
+    def __repr__(self):
+        return f"<Client(id={self.id}, name='{self.name}', email='{self.email}')>"     

@@ -12,6 +12,10 @@ import {
   CircularProgress,
   Grid,
   Chip,
+  Select,
+  FormControl,
+  InputLabel,
+  FormHelperText,
 } from "@mui/material";
 import { api } from "../services/api";
 
@@ -31,6 +35,9 @@ export default function InvoiceDialog({
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [clients, setClients] = useState([]);
+  const [clientsLoading, setClientsLoading] = useState(false);
+  const [selectedClientId, setSelectedClientId] = useState("");
   const isViewMode = mode === "view";
 
   const [formData, setFormData] = useState({
@@ -43,6 +50,24 @@ export default function InvoiceDialog({
     issue_date: "",
     due_date: "",
   });
+
+  // Fetch clients when dialog opens in create mode
+  useEffect(() => {
+    if (open && !isViewMode) {
+      const fetchClients = async () => {
+        try {
+          setClientsLoading(true);
+          const data = await api.getClients();
+          setClients(data);
+        } catch (err) {
+          console.error("Error fetching clients:", err);
+        } finally {
+          setClientsLoading(false);
+        }
+      };
+      fetchClients();
+    }
+  }, [open, isViewMode]);
 
   // Load invoice data when in view mode
   useEffect(() => {
@@ -69,6 +94,7 @@ export default function InvoiceDialog({
         issue_date: "",
         due_date: "",
       });
+      setSelectedClientId("");
     }
   }, [isViewMode, invoice, open]);
 
@@ -80,6 +106,21 @@ export default function InvoiceDialog({
     }));
     // Clear error when user starts typing
     if (error) setError("");
+  };
+
+  const handleClientChange = (e) => {
+    const clientId = e.target.value;
+    setSelectedClientId(clientId);
+
+    // Find the selected client and populate name and email
+    const selectedClient = clients.find((c) => c.id === parseInt(clientId));
+    if (selectedClient) {
+      setFormData((prev) => ({
+        ...prev,
+        customer_name: selectedClient.name || "",
+        customer_email: selectedClient.email || "",
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -266,21 +307,57 @@ export default function InvoiceDialog({
               )}
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField
-                margin="dense"
-                name="customer_name"
-                label="Customer Name"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={formData.customer_name}
-                onChange={handleChange}
-                required={!isViewMode}
-                disabled={loading || isViewMode}
-                InputProps={{
-                  readOnly: isViewMode,
-                }}
-              />
+              {isViewMode ? (
+                <TextField
+                  margin="dense"
+                  name="customer_name"
+                  label="Customer Name"
+                  type="text"
+                  fullWidth
+                  variant="outlined"
+                  value={formData.customer_name}
+                  disabled
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                />
+              ) : (
+                <FormControl
+                  fullWidth
+                  margin="dense"
+                  required
+                  disabled={loading || clientsLoading}
+                >
+                  <InputLabel>Customer</InputLabel>
+                  <Select
+                    value={selectedClientId}
+                    onChange={handleClientChange}
+                    label="Customer"
+                    disabled={loading || clientsLoading}
+                  >
+                    <MenuItem value="">
+                      <em>Select a client</em>
+                    </MenuItem>
+                    {clients.map((client) => (
+                      <MenuItem key={client.id} value={client.id}>
+                        {client.name}
+                        {client.company ? ` (${client.company})` : ""}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {clientsLoading && (
+                    <FormHelperText>
+                      <CircularProgress size={16} sx={{ mr: 1 }} />
+                      Loading clients...
+                    </FormHelperText>
+                  )}
+                  {clients.length === 0 && !clientsLoading && (
+                    <FormHelperText>
+                      No clients available. Create a client first.
+                    </FormHelperText>
+                  )}
+                </FormControl>
+              )}
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField

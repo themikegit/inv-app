@@ -4,54 +4,141 @@ import {
   createTheme,
   CssBaseline,
   Box,
-  Drawer,
-  AppBar,
-  Toolbar,
-  List,
-  Typography,
-  Divider,
-  IconButton,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
   Container,
+  Toolbar,
+  Typography,
   Button,
   CircularProgress,
+  useMediaQuery,
 } from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
-import ReceiptIcon from "@mui/icons-material/Receipt";
-import LogoutIcon from "@mui/icons-material/Logout";
+import AppBarComponent from "./AppBar";
+import DrawerComponent from "./Drawer";
 import MyInvoices from "./MyInvoices";
+import Overview from "./Overview";
+import Clients from "./Clients";
 import LoginDialog from "./LoginDialog";
 import { useAuth } from "../contexts/AuthContext";
 
 const drawerWidth = 240;
 
-const darkTheme = createTheme({
+// Modern Dark Mode Theme
+const theme = createTheme({
   palette: {
     mode: "dark",
     primary: {
-      main: "#90caf9",
+      main: "#6366f1",
+      light: "#818cf8",
+      dark: "#4f46e5",
     },
     secondary: {
-      main: "#f48fb1",
+      main: "#ec4899",
+      light: "#f472b6",
+      dark: "#db2777",
     },
     background: {
-      default: "#121212",
-      paper: "#1e1e1e",
+      default: "#0f172a",
+      paper: "#1e293b",
+    },
+    text: {
+      primary: "#f1f5f9",
+      secondary: "#94a3b8",
+    },
+    divider: "rgba(255, 255, 255, 0.1)",
+  },
+  typography: {
+    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+    h4: {
+      fontWeight: 600,
+      fontSize: 24,
+    },
+    h5: {
+      fontWeight: 600,
+      fontSize: 20,
+    },
+    h6: {
+      fontWeight: 600,
+      fontSize: 18,
+    },
+    body1: {
+      fontSize: 14,
+    },
+    body2: {
+      fontSize: 12,
+    },
+  },
+  shape: {
+    borderRadius: 12,
+  },
+  components: {
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          backgroundImage: "none",
+          backgroundColor: "#1e293b",
+          border: "1px solid rgba(255, 255, 255, 0.1)",
+          boxShadow:
+            "0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2)",
+        },
+      },
+    },
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          backgroundImage: "none",
+          backgroundColor: "#1e293b",
+          borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+          boxShadow: "none",
+        },
+      },
+    },
+    MuiDrawer: {
+      styleOverrides: {
+        paper: {
+          backgroundColor: "#0f172a",
+          borderRight: "1px solid rgba(255, 255, 255, 0.1)",
+        },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: "none",
+          borderRadius: 8,
+          fontWeight: 500,
+        },
+      },
+    },
+    MuiTab: {
+      defaultProps: {
+        disableRipple: true,
+      },
+    },
+  },
+  mixins: {
+    toolbar: {
+      minHeight: 64,
     },
   },
 });
 
-export default function Dashboard() {
-  const { isAuthenticated, loading, user, logout } = useAuth();
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState("invoices");
+function DashboardContent() {
+  const { isAuthenticated, loading } = useAuth();
+  const isMobile = useMediaQuery((theme) => theme.breakpoints.down("sm"));
+  const [drawerOpen, setDrawerOpen] = useState(!isMobile);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState("overview");
   const [loginOpen, setLoginOpen] = useState(false);
 
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
+  const toggleDrawer = () => {
+    if (isMobile) {
+      setMobileDrawerOpen(!mobileDrawerOpen);
+    } else {
+      setDrawerOpen(!drawerOpen);
+    }
+  };
+
+  const handleMobileDrawerClose = () => {
+    setMobileDrawerOpen(false);
   };
 
   useEffect(() => {
@@ -60,162 +147,85 @@ export default function Dashboard() {
     }
   }, [loading, isAuthenticated]);
 
-  const menuItems = [
-    {
-      text: "My Invoices",
-      icon: <ReceiptIcon />,
-      page: "invoices",
-    },
-  ];
-
-  const drawer = (
-    <div>
-      <Toolbar>
-        <Typography variant="h6" noWrap component="div">
-          Invoice App
-        </Typography>
-      </Toolbar>
-      <Divider />
-      <List>
-        {menuItems.map((item) => (
-          <ListItem key={item.text} disablePadding>
-            <ListItemButton
-              selected={currentPage === item.page}
-              onClick={() => setCurrentPage(item.page)}
-            >
-              <ListItemIcon sx={{ color: "inherit" }}>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.text} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-    </div>
-  );
+  // Update drawer state when mobile breakpoint changes
+  useEffect(() => {
+    if (isMobile) {
+      setDrawerOpen(false);
+    } else {
+      setDrawerOpen(true);
+    }
+  }, [isMobile]);
 
   const renderPage = () => {
     switch (currentPage) {
+      case "overview":
+        return <Overview />;
       case "invoices":
         return <MyInvoices />;
+      case "clients":
+        return <Clients />;
       default:
-        return <MyInvoices />;
+        return <Overview />;
     }
   };
 
   if (loading) {
     return (
-      <ThemeProvider theme={darkTheme}>
-        <CssBaseline />
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            minHeight: "100vh",
-            backgroundColor: "background.default",
-          }}
-        >
-          <CircularProgress />
-        </Box>
-      </ThemeProvider>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+          backgroundColor: "background.default",
+        }}
+      >
+        <CircularProgress />
+      </Box>
     );
   }
 
   return (
-    <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
+    <>
       <Box sx={{ display: "flex" }}>
-        <AppBar
-          position="fixed"
-          sx={{
-            width: { sm: `calc(100% - ${drawerWidth}px)` },
-            ml: { sm: `${drawerWidth}px` },
-          }}
-        >
-          <Toolbar>
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              edge="start"
-              onClick={handleDrawerToggle}
-              sx={{ mr: 2, display: { sm: "none" } }}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Typography
-              variant="h6"
-              noWrap
-              component="div"
-              sx={{ flexGrow: 1 }}
-            >
-              Invoice Management
-            </Typography>
-            {isAuthenticated && user && (
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                <Typography
-                  variant="body2"
-                  sx={{ display: { xs: "none", sm: "block" } }}
-                >
-                  {user.full_name || user.email}
-                </Typography>
-                <Button
-                  color="inherit"
-                  startIcon={<LogoutIcon />}
-                  onClick={logout}
-                  size="small"
-                >
-                  Logout
-                </Button>
-              </Box>
-            )}
-          </Toolbar>
-        </AppBar>
-        <Box
-          component="nav"
-          sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
-        >
-          <Drawer
-            variant="temporary"
-            open={mobileOpen}
-            onClose={handleDrawerToggle}
-            ModalProps={{
-              keepMounted: true, // Better open performance on mobile.
-            }}
-            sx={{
-              display: { xs: "block", sm: "none" },
-              "& .MuiDrawer-paper": {
-                boxSizing: "border-box",
-                width: drawerWidth,
-              },
-            }}
-          >
-            {drawer}
-          </Drawer>
-          <Drawer
-            variant="permanent"
-            sx={{
-              display: { xs: "none", sm: "block" },
-              "& .MuiDrawer-paper": {
-                boxSizing: "border-box",
-                width: drawerWidth,
-              },
-            }}
-            open
-          >
-            {drawer}
-          </Drawer>
-        </Box>
+        <AppBarComponent
+          open={drawerOpen}
+          toggleDrawer={toggleDrawer}
+          currentPage={currentPage}
+        />
+        <DrawerComponent
+          open={drawerOpen}
+          toggleDrawer={toggleDrawer}
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          mobileOpen={mobileDrawerOpen}
+          onMobileClose={handleMobileDrawerClose}
+        />
         <Box
           component="main"
           sx={{
+            backgroundColor: "#0f172a",
             flexGrow: 1,
-            p: 3,
-            width: { sm: `calc(100% - ${drawerWidth}px)` },
-            minHeight: "100vh",
-            backgroundColor: "background.default",
+            height: "100vh",
+            overflow: "auto",
+            transition: (theme) =>
+              theme.transitions.create("margin", {
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.leavingScreen,
+              }),
+            marginLeft: `-${drawerWidth}px`,
+            ...(drawerOpen && {
+              transition: (theme) =>
+                theme.transitions.create("margin", {
+                  easing: theme.transitions.easing.easeOut,
+                  duration: theme.transitions.duration.enteringScreen,
+                }),
+              marginLeft: 0,
+            }),
           }}
         >
           <Toolbar />
-          <Container maxWidth="lg">
+          <Container maxWidth="xl" sx={{ mt: 3, mb: 4, px: 3 }}>
             {isAuthenticated ? (
               renderPage()
             ) : (
@@ -239,6 +249,15 @@ export default function Dashboard() {
         </Box>
       </Box>
       <LoginDialog open={loginOpen} onClose={() => setLoginOpen(false)} />
+    </>
+  );
+}
+
+export default function Dashboard() {
+  return (
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <DashboardContent />
     </ThemeProvider>
   );
 }

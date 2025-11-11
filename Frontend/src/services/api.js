@@ -114,4 +114,39 @@ export const api = {
   getCurrentUser: () => {
     return apiRequest("/auth/me");
   },
+
+  // ============= CLIENT ENDPOINTS =============
+
+  // Get all clients
+  getClients: () => {
+    return apiRequest("/clients");
+  },
+
+  // Get single client
+  getClient: (id) => {
+    return apiRequest(`/clients/${id}`);
+  },
+
+  // Create client
+  createClient: (clientData) => {
+    return apiRequest("/clients", {
+      method: "POST",
+      body: JSON.stringify(clientData),
+    });
+  },
+
+  // Update client
+  updateClient: (id, clientData) => {
+    return apiRequest(`/clients/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(clientData),
+    });
+  },
+
+  // Delete client
+  deleteClient: (id) => {
+    return apiRequest(`/clients/${id}`, {
+      method: "DELETE",
+    });
+  },
 };

@@ -77,7 +77,11 @@ export default function MyInvoices() {
         alignItems="center"
         mb={3}
       >
-        <Typography variant="h4" component="h1">
+        <Typography
+          variant="h5"
+          component="h1"
+          sx={{ fontWeight: 600, color: "text.primary" }}
+        >
           My Invoices
         </Typography>
         <Box>
@@ -119,22 +123,46 @@ export default function MyInvoices() {
       ) : (
         <TableContainer
           component={Paper}
-          sx={{ backgroundColor: "background.paper" }}
+          sx={{
+            backgroundColor: "background.paper",
+            border: "1px solid rgba(255, 255, 255, 0.1)",
+            borderRadius: 2,
+          }}
         >
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Invoice Number</TableCell>
-                <TableCell>Customer Name</TableCell>
-                <TableCell>Amount</TableCell>
-                <TableCell>Due Date</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Actions</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: "text.primary" }}>
+                  Invoice Number
+                </TableCell>
+                <TableCell sx={{ fontWeight: 600, color: "text.primary" }}>
+                  Customer Name
+                </TableCell>
+                <TableCell sx={{ fontWeight: 600, color: "text.primary" }}>
+                  Amount
+                </TableCell>
+                <TableCell sx={{ fontWeight: 600, color: "text.primary" }}>
+                  Due Date
+                </TableCell>
+                <TableCell sx={{ fontWeight: 600, color: "text.primary" }}>
+                  Status
+                </TableCell>
+                <TableCell sx={{ fontWeight: 600, color: "text.primary" }}>
+                  Actions
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {invoices.map((invoice) => (
-                <TableRow key={invoice.id} hover>
+                <TableRow
+                  key={invoice.id}
+                  hover
+                  sx={{
+                    "&:hover": {
+                      backgroundColor: "rgba(255, 255, 255, 0.05)",
+                    },
+                  }}
+                >
                   <TableCell>{invoice.invoice_number}</TableCell>
                   <TableCell>{invoice.customer_name}</TableCell>
                   <TableCell>
