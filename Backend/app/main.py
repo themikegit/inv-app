@@ -33,6 +33,7 @@ app.add_middleware(
         "http://localhost:3000",
         "http://localhost:5173",  # Vite default port
         "http://127.0.0.1:5173",
+     "http://167.71.34.142",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -212,127 +213,6 @@ def delete_invoice(
         )
     
     db.delete(invoice)
-    db.commit()
-    return None
-
-
-# ============= CLIENT ENDPOINTS =============
-
-@app.post(
-    "/clients",
-    response_model=ClientResponse,
-    status_code=status.HTTP_201_CREATED,
-    tags=["clients"]
-)
-def create_client(
-    client: ClientCreate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    """Create a new client for the current user."""
-    client_data = client.model_dump()
-    client_data["user_id"] = current_user.id
-    db_client = Client(**client_data)
-    db.add(db_client)
-    db.commit()
-    db.refresh(db_client)
-    return db_client
-
-
-@app.get(
-    "/clients",
-    response_model=List[ClientResponse],
-    tags=["clients"]
-)
-def get_clients(
-    skip: int = 0,
-    limit: int = 100,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    """Get all clients for the current user."""
-    clients = db.query(Client).filter(
-        Client.user_id == current_user.id
-    ).offset(skip).limit(limit).all()
-    return clients
-
-
-@app.get(
-    "/clients/{client_id}",
-    response_model=ClientResponse,
-    tags=["clients"]
-)
-def get_client(
-    client_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    """Get a single client by ID (only if it belongs to the current user)."""
-    client = db.query(Client).filter(
-        Client.id == client_id,
-        Client.user_id == current_user.id
-    ).first()
-    if not client:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Client with id {client_id} not found"
-        )
-    return client
-
-
-@app.put(
-    "/clients/{client_id}",
-    response_model=ClientResponse,
-    tags=["clients"]
-)
-def update_client(
-    client_id: int,
-    client_update: ClientUpdate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    """Update an existing client (only if it belongs to the current user)."""
-    client = db.query(Client).filter(
-        Client.id == client_id,
-        Client.user_id == current_user.id
-    ).first()
-    if not client:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Client with id {client_id} not found"
-        )
-    
-    update_data = client_update.model_dump(exclude_unset=True)
-    for field, value in update_data.items():
-        setattr(client, field, value)
-    
-    db.commit()
-    db.refresh(client)
-    return client
-
-
-@app.delete(
-    "/clients/{client_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-    tags=["clients"]
-)
-def delete_client(
-    client_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    """Delete a client (only if it belongs to the current user)."""
-    client = db.query(Client).filter(
-        Client.id == client_id,
-        Client.user_id == current_user.id
-    ).first()
-    if not client:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Client with id {client_id} not found"
-        )
-    
-    db.delete(client)
     db.commit()
     return None
 

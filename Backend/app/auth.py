@@ -55,7 +55,21 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     hashed = "$2b$12$..."
     verify_password(plain, hashed)  # Returns True if match
     """
-    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
+    try:
+        # Ensure both are bytes for bcrypt.checkpw
+        if isinstance(hashed_password, str):
+            hashed_bytes = hashed_password.encode('utf-8')
+        else:
+            hashed_bytes = hashed_password
+        
+        return bcrypt.checkpw(
+            plain_password.encode('utf-8'),
+            hashed_bytes
+        )
+    except (ValueError, TypeError) as e:
+        # Handle invalid hash format (e.g., plain text passwords stored by mistake)
+        # Log the error in production, return False for security
+        return False
 
 
 # ============= JWT TOKEN FUNCTIONS =============

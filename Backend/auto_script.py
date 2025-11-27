@@ -91,11 +91,10 @@ def create_sample_invoices(count: int = 50, user_email: str = None) -> None:
             user = db.query(User).first()
             if not user:
                 print("No users found. Creating a test user...")
-                from passlib.context import CryptContext
-                pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+                from app.auth import hash_password
                 user = User(
                     email="test@example.com",
-                    hashed_password=pwd_context.hash("testpassword123"),
+                    hashed_password=hash_password("testpassword123"),
                     full_name="Test User"
                 )
                 db.add(user)
